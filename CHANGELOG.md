@@ -6,6 +6,7 @@ All notable changes to OrgTeX will be documented in this file.
 
 ### Added
 
+- Automated end-to-end test runner for the initial OrgTeX pipeline.
 - Minimal end-to-end Org Mode to PDF pipeline test.
 - Testing documentation for the initial OrgTeX pipeline.
 - Initial architecture documentation.
