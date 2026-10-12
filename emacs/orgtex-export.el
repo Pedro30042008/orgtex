@@ -5,6 +5,8 @@
 (require 'org)
 (require 'ox-latex)
 
+(require 'orgtex-config)
+
 ;; Use LuaLaTeX as the default OrgTeX compiler.
 (setq org-latex-compiler "lualatex")
 
@@ -19,10 +21,22 @@
    ("\\paragraph{%s}" . "\\paragraph*{%s}")
    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
+(defun orgtex-export--apply-language ()
+  "Apply the OrgTeX document language to the current Org buffer."
+  (let ((language (orgtex-config-get "LANGUAGE")))
+    (when language
+      (setq-local org-export-default-language
+                  (pcase language
+                    ("es" "es")
+                    ("en" "en")
+                    (_ language))))))
+
 (defun orgtex-export-file (file)
   "Export Org FILE to LaTeX using OrgTeX configuration."
   (let ((buffer (find-file-noselect file)))
     (with-current-buffer buffer
+      (orgtex-config-read)
+      (orgtex-export--apply-language)
       (org-latex-export-to-latex))))
 
 (provide 'orgtex-export)

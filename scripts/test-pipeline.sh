@@ -58,6 +58,7 @@ rm -f "$TEX_SOURCE"
 echo "Exporting Org document to LaTeX..."
 
 emacs -Q --batch \
+    -L "$PROJECT_ROOT/emacs" \
     -l "$PROJECT_ROOT/emacs/orgtex-export.el" \
     --eval "(orgtex-export-file \"$ORG_SOURCE\")"
 

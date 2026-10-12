@@ -2,6 +2,10 @@
 #+AUTHOR: OrgTeX Project
 #+DATE: \today
 #+LATEX_CLASS: orgtex-article
+#+ORGTEX_FAMILY: article-document
+#+ORGTEX_VARIANT: simple-document
+#+ORGTEX_THEME: minimal
+#+ORGTEX_LANGUAGE: es
 #+OPTIONS: toc:nil
 
 * Introduction
