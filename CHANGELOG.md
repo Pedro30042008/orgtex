@@ -6,6 +6,8 @@ All notable changes to OrgTeX will be documented in this file.
 
 ### Added
 
+- Minimal end-to-end Org Mode to PDF pipeline test.
+- Testing documentation for the initial OrgTeX pipeline.
 - Initial architecture documentation.
 - Mozilla Public License 2.0 (MPL-2.0).
 - ADR 0001 documenting the licensing decision.

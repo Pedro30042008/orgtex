@@ -54,6 +54,13 @@ See:
 - `docs/ai-assisted-development.md`
 - `docs/third-party-licenses.md`
 
+### Testing
+
+The current testing procedure is documented in
+[`docs/testing.md`](docs/testing.md).
+
+It includes the minimal end-to-end Org Mode → OrgTeX → LuaLaTeX → PDF pipeline test.
+
 ## License
 
 OrgTeX is licensed under the Mozilla Public License 2.0 (MPL-2.0).
