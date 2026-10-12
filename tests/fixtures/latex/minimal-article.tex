@@ -1,0 +1,42 @@
+% SPDX-License-Identifier: MPL-2.0
+
+\documentclass{orgtex-article}
+
+\title{OrgTeX Minimal Test}
+\author{OrgTeX Project}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This document verifies that the minimal OrgTeX architecture can compile
+successfully.
+
+\section{Mathematics}
+
+A simple equation:
+
+\[
+    e^{i\pi} + 1 = 0
+\]
+
+\section{Table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{ll}
+        \toprule
+        Component & Status \\
+        \midrule
+        OrgTeX Core & Working \\
+        Article backend & Working \\
+        LuaLaTeX & Working \\
+        \bottomrule
+    \end{tabular}
+    \caption{Minimal OrgTeX test}
+\end{table}
+
+\end{document}
