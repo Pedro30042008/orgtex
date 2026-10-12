@@ -1,0 +1,27 @@
+#+TITLE: OrgTeX Minimal Org Test
+#+AUTHOR: OrgTeX Project
+#+DATE: \today
+#+LATEX_CLASS: orgtex-article
+#+OPTIONS: toc:nil
+
+* Introduction
+
+This document verifies that Org Mode can export a document using the
+OrgTeX article backend.
+
+* Mathematics
+
+A simple equation:
+
+\[
+e^{i\pi} + 1 = 0
+\]
+
+* Table
+
+| Component       | Status  |
+|-----------------+---------|
+| Org Mode        | Working |
+| OrgTeX Core     | Working |
+| Article backend | Working |
+| LuaLaTeX        | Working |
