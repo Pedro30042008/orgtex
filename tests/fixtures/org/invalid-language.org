@@ -1,0 +1,12 @@
+#+TITLE: Invalid OrgTeX Language Test
+#+AUTHOR: OrgTeX Project
+#+DATE: \today
+
+#+ORGTEX_FAMILY: article-document
+#+ORGTEX_VARIANT: simple-document
+#+ORGTEX_THEME: minimal
+#+ORGTEX_LANGUAGE: klingon
+
+* Invalid configuration
+
+This document intentionally contains an invalid OrgTeX language value.
