@@ -81,6 +81,27 @@ grep -Fq '\usepackage{orgtex-theme-minimal}' "$TEX_SOURCE" \
 grep -Fq '\usepackage{orgtex-cover-simple}' "$TEX_SOURCE" \
     || fail "generated LaTeX does not load the expected simple cover."
 
+THEME_MATCH="$(
+    grep -nFm1 '\usepackage{orgtex-theme-minimal}' "$TEX_SOURCE"
+)"
+
+COVER_MATCH="$(
+    grep -nFm1 '\usepackage{orgtex-cover-simple}' "$TEX_SOURCE"
+)"
+
+THEME_LINE="${THEME_MATCH%%:*}"
+COVER_LINE="${COVER_MATCH%%:*}"
+
+[[ "$THEME_LINE" -lt "$COVER_LINE" ]] \
+    || fail "generated LaTeX does not load the theme before the cover."
+
+MAKETITLE_COUNT="$(
+    grep -Fc '\maketitle' "$TEX_SOURCE" || true
+)"
+
+[[ "$MAKETITLE_COUNT" -eq 1 ]] \
+    || fail "generated LaTeX must contain exactly one \\maketitle command."
+
 # ----------------------------------------------------------
 # LaTeX -> PDF
 # ----------------------------------------------------------
