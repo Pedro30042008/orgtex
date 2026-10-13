@@ -9,6 +9,7 @@
 (require 'orgtex-family)
 (require 'orgtex-variant)
 (require 'orgtex-theme)
+(require 'orgtex-cover)
 
 ;; Use LuaLaTeX as the default OrgTeX compiler.
 (setq org-latex-compiler "lualatex")
@@ -38,6 +39,23 @@
     (when (and family variant)
       (orgtex-variant-validate-for-family variant family))))
 
+(defun orgtex-export--ensure-local-packages ()
+  "Ensure `org-latex-packages-alist' is buffer-local."
+  (unless (local-variable-p 'org-latex-packages-alist)
+    (setq-local org-latex-packages-alist
+                (copy-tree org-latex-packages-alist))))
+
+(defun orgtex-export--add-package (package)
+  "Append LaTeX PACKAGE to the current buffer export configuration."
+  (when package
+    (orgtex-export--ensure-local-packages)
+    (let ((entry (list "" package)))
+      (unless (member entry org-latex-packages-alist)
+        (setq-local
+         org-latex-packages-alist
+         (append org-latex-packages-alist
+                 (list entry)))))))
+
 (defun orgtex-export--apply-theme ()
   "Validate and apply the OrgTeX document theme."
   (let ((family (orgtex-config-get "FAMILY"))
@@ -45,16 +63,18 @@
     (when theme
       (when family
         (orgtex-theme-validate-for-family theme family))
+      (orgtex-export--add-package
+       (orgtex-theme-get-package theme)))))
 
-      (let ((package (orgtex-theme-get-package theme)))
-        ;; Work with a buffer-local copy so OrgTeX does not modify the
-        ;; user's global Org Mode LaTeX package configuration.
-        (setq-local org-latex-packages-alist
-                    (copy-tree org-latex-packages-alist))
-
-        (add-to-list
-         'org-latex-packages-alist
-         (list "" package))))))
+(defun orgtex-export--apply-cover ()
+  "Validate and apply the OrgTeX document cover."
+  (let ((family (orgtex-config-get "FAMILY"))
+        (cover (orgtex-config-get "COVER")))
+    (when cover
+      (when family
+        (orgtex-cover-validate-for-family cover family))
+      (orgtex-export--add-package
+       (orgtex-cover-get-package cover)))))
 
 (defun orgtex-export--apply-language ()
   "Apply the OrgTeX document language to the current Org buffer."
@@ -74,6 +94,7 @@
       (orgtex-export--apply-family)
       (orgtex-export--validate-variant)
       (orgtex-export--apply-theme)
+      (orgtex-export--apply-cover)
       (orgtex-export--apply-language)
       (org-latex-export-to-latex))))
 

@@ -1,10 +1,13 @@
 #+TITLE: OrgTeX Minimal Org Test
 #+AUTHOR: OrgTeX Project
 #+DATE: \today
+
 #+ORGTEX_FAMILY: article-document
 #+ORGTEX_VARIANT: simple-document
 #+ORGTEX_THEME: minimal
+#+ORGTEX_COVER: simple
 #+ORGTEX_LANGUAGE: es
+
 #+OPTIONS: toc:nil
 
 * Introduction
