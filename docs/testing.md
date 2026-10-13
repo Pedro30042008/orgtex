@@ -1,8 +1,8 @@
 # Testing
 
 OrgTeX currently includes automated tests for document configuration,
-document family selection, document variant validation, and the main document
-generation pipeline.
+document family selection, document variant validation, document theme
+selection, and the main document generation pipeline.
 
 The goal of the test suite is to verify that the core OrgTeX workflow works
 from an Org Mode source file to a final PDF and that invalid configuration or
@@ -10,12 +10,13 @@ unsupported document combinations are rejected correctly.
 
 ## Available test scripts
 
-OrgTeX currently provides four test scripts:
+OrgTeX currently provides five test scripts:
 
 ```text
 scripts/test-config.sh
 scripts/test-family.sh
 scripts/test-variant.sh
+scripts/test-theme.sh
 scripts/test-pipeline.sh
 ```
 
@@ -168,6 +169,69 @@ article-document
 
 and rejected for an unsupported family.
 
+## Document theme test
+
+The theme test verifies that public OrgTeX theme names are mapped to their
+internal LaTeX implementation packages.
+
+The current theme mapping is:
+
+```text
+minimal -> orgtex-theme-minimal
+```
+
+The test also verifies that the theme is valid for the selected document
+family.
+
+The current supported combination is:
+
+```text
+article-document
+        +
+minimal
+        ↓
+valid
+```
+
+The current intentionally invalid combination is:
+
+```text
+book
+  +
+minimal
+  ↓
+invalid
+```
+
+### Running the theme test
+
+Run:
+
+```bash
+./scripts/test-theme.sh
+```
+
+A successful run ends with:
+
+```text
+OrgTeX theme tests OK
+```
+
+A successful theme test means that:
+
+```text
+minimal
+```
+
+was resolved to:
+
+```text
+orgtex-theme-minimal
+```
+
+and was accepted for `article-document` while being rejected for an
+unsupported family.
+
 ## End-to-end pipeline test
 
 The pipeline test verifies that:
@@ -176,7 +240,9 @@ The pipeline test verifies that:
 - OrgTeX document configuration can be loaded during export;
 - `ORGTEX_FAMILY` selects the correct internal LaTeX class;
 - `ORGTEX_VARIANT` is validated against the selected family;
-- the generated LaTeX document loads the OrgTeX article backend;
+- `ORGTEX_THEME` selects and loads the correct LaTeX theme package;
+- the generated LaTeX document uses the expected OrgTeX class;
+- the generated LaTeX document loads the expected OrgTeX theme;
 - the OrgTeX article backend loads the OrgTeX core package;
 - LuaLaTeX can compile the generated document successfully;
 - the final PDF is written to the build directory;
@@ -195,11 +261,15 @@ OrgTeX family registry
     ↓
 OrgTeX variant validation
     ↓
+OrgTeX theme registry
+    ↓
 OrgTeX export integration
     ↓
 orgtex-article.cls
     ↓
 orgtex-base.sty
+    ↓
+orgtex-theme-minimal.sty
     ↓
 LuaLaTeX
     ↓
@@ -239,6 +309,18 @@ tests/fixtures/org/minimal-article.tex
 
 The generated `.tex` file is ignored by Git because it is a build artifact.
 
+The pipeline verifies that the generated LaTeX source contains:
+
+```latex
+\documentclass{orgtex-article}
+```
+
+and:
+
+```latex
+\usepackage{orgtex-theme-minimal}
+```
+
 The final PDF and auxiliary files are written to:
 
 ```text
@@ -257,9 +339,11 @@ Run:
 
 The script:
 
-- checks that Emacs, `latexmk`, and LuaLaTeX are available;
+- checks that Emacs, `latexmk`, LuaLaTeX, and `grep` are available;
 - removes previous test output;
 - exports the Org fixture to LaTeX;
+- verifies the generated LaTeX class;
+- verifies the generated LaTeX theme package;
 - compiles the generated LaTeX document;
 - verifies that the expected PDF was generated;
 - checks the final LaTeX log for persistent warnings.
@@ -287,12 +371,13 @@ Run all current automated tests with:
 ./scripts/test-config.sh
 ./scripts/test-family.sh
 ./scripts/test-variant.sh
+./scripts/test-theme.sh
 ./scripts/test-pipeline.sh
 ```
 
-All four commands should complete successfully before merging changes that
-affect configuration, family selection, variant validation, or the export
-pipeline.
+All five commands should complete successfully before merging changes that
+affect configuration, family selection, variant validation, theme selection, or
+the export pipeline.
 
 ## Manual pipeline
 
@@ -330,10 +415,22 @@ The generated document should contain:
 \documentclass{orgtex-article}
 ```
 
-### 4. Compile LaTeX to PDF
+### 4. Verify the selected theme
 
 ```bash
-TEXINPUTS="$PWD/latex/core//:$PWD/latex/backends//:" \
+grep -n "orgtex-theme-minimal" tests/fixtures/org/minimal-article.tex
+```
+
+The generated document should contain:
+
+```latex
+\usepackage{orgtex-theme-minimal}
+```
+
+### 5. Compile LaTeX to PDF
+
+```bash
+TEXINPUTS="$PWD/latex/core//:$PWD/latex/backends//:$PWD/latex/themes//:" \
 latexmk \
   -lualatex \
   -interaction=nonstopmode \
@@ -341,13 +438,13 @@ latexmk \
   tests/fixtures/org/minimal-article.tex
 ```
 
-### 5. Verify the PDF
+### 6. Verify the PDF
 
 ```bash
 test -f build/tests/org/minimal-article.pdf && echo "OrgTeX pipeline OK"
 ```
 
-### 6. Check the final log
+### 7. Check the final log
 
 ```bash
 grep -n "Warning" build/tests/org/minimal-article.log
@@ -387,8 +484,11 @@ Only the `article-document` family is currently registered.
 Only the `simple-document` variant is currently registered, and it currently
 supports only `article-document`.
 
-Additional document families and variants will be added incrementally as their
-backends and behavior are implemented and tested.
+Only the `minimal` theme is currently registered, and it currently supports
+only `article-document`.
+
+Additional document families, variants, and themes will be added incrementally
+as their implementations and behavior are developed and tested.
 
 ## Future testing
 
@@ -399,9 +499,11 @@ As OrgTeX grows, the test infrastructure should expand to cover:
 - missing required configuration;
 - additional document families;
 - additional document variants;
+- additional document themes;
 - invalid family and variant combinations;
+- invalid family and theme combinations;
 - invalid family/backend mappings;
-- themes and covers;
+- covers;
 - configuration precedence;
 - invalid configuration handling;
 - cross-references;

@@ -40,6 +40,7 @@ echo "Checking test dependencies..."
 require_command emacs
 require_command latexmk
 require_command lualatex
+require_command grep
 
 # ----------------------------------------------------------
 # Clean previous output
@@ -66,12 +67,24 @@ emacs -Q --batch \
     || fail "Org Mode did not generate the expected LaTeX file."
 
 # ----------------------------------------------------------
+# Generated LaTeX verification
+# ----------------------------------------------------------
+
+echo "Verifying generated LaTeX configuration..."
+
+grep -Fq '\documentclass{orgtex-article}' "$TEX_SOURCE" \
+    || fail "generated LaTeX does not use the expected orgtex-article class."
+
+grep -Fq '\usepackage{orgtex-theme-minimal}' "$TEX_SOURCE" \
+    || fail "generated LaTeX does not load the expected minimal theme."
+
+# ----------------------------------------------------------
 # LaTeX -> PDF
 # ----------------------------------------------------------
 
 echo "Compiling LaTeX document with LuaLaTeX..."
 
-TEXINPUTS="$PROJECT_ROOT/latex/core//:$PROJECT_ROOT/latex/backends//:" \
+TEXINPUTS="$PROJECT_ROOT/latex/core//:$PROJECT_ROOT/latex/backends//:$PROJECT_ROOT/latex/themes//:" \
 latexmk \
     -lualatex \
     -interaction=nonstopmode \
@@ -79,7 +92,7 @@ latexmk \
     "$TEX_SOURCE"
 
 # ----------------------------------------------------------
-# Verification
+# Final verification
 # ----------------------------------------------------------
 
 [[ -f "$PDF_OUTPUT" ]] \
