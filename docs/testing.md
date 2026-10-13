@@ -1,19 +1,21 @@
 # Testing
 
 OrgTeX currently includes automated tests for document configuration,
-document family selection, and the main document generation pipeline.
+document family selection, document variant validation, and the main document
+generation pipeline.
 
 The goal of the test suite is to verify that the core OrgTeX workflow works
-from an Org Mode source file to a final PDF and that invalid configuration is
-rejected correctly.
+from an Org Mode source file to a final PDF and that invalid configuration or
+unsupported document combinations are rejected correctly.
 
 ## Available test scripts
 
-OrgTeX currently provides three test scripts:
+OrgTeX currently provides four test scripts:
 
 ```text
 scripts/test-config.sh
 scripts/test-family.sh
+scripts/test-variant.sh
 scripts/test-pipeline.sh
 ```
 
@@ -110,6 +112,62 @@ orgtex-article
 
 was resolved correctly and that an unknown family was rejected.
 
+## Document variant test
+
+The variant test verifies that public OrgTeX variants are valid for the
+selected document family.
+
+The current supported combination is:
+
+```text
+article-document
+        +
+simple-document
+        ↓
+valid
+```
+
+The test also verifies that unsupported family and variant combinations are
+rejected.
+
+The current intentionally invalid combination is:
+
+```text
+book
+  +
+simple-document
+  ↓
+invalid
+```
+
+### Running the variant test
+
+Run:
+
+```bash
+./scripts/test-variant.sh
+```
+
+A successful run ends with:
+
+```text
+OrgTeX variant tests OK
+```
+
+A successful variant test means that:
+
+```text
+simple-document
+```
+
+was accepted for:
+
+```text
+article-document
+```
+
+and rejected for an unsupported family.
+
 ## End-to-end pipeline test
 
 The pipeline test verifies that:
@@ -117,6 +175,7 @@ The pipeline test verifies that:
 - Org Mode can export a document using OrgTeX;
 - OrgTeX document configuration can be loaded during export;
 - `ORGTEX_FAMILY` selects the correct internal LaTeX class;
+- `ORGTEX_VARIANT` is validated against the selected family;
 - the generated LaTeX document loads the OrgTeX article backend;
 - the OrgTeX article backend loads the OrgTeX core package;
 - LuaLaTeX can compile the generated document successfully;
@@ -133,6 +192,8 @@ Org Mode
 OrgTeX configuration
     ↓
 OrgTeX family registry
+    ↓
+OrgTeX variant validation
     ↓
 OrgTeX export integration
     ↓
@@ -153,10 +214,13 @@ The current pipeline test uses:
 tests/fixtures/org/minimal-article.org
 ```
 
-The document declares its family using:
+The document currently declares:
 
 ```org
 #+ORGTEX_FAMILY: article-document
+#+ORGTEX_VARIANT: simple-document
+#+ORGTEX_THEME: minimal
+#+ORGTEX_LANGUAGE: es
 ```
 
 The user-facing Org document does not need to declare:
@@ -222,11 +286,13 @@ Run all current automated tests with:
 ```bash
 ./scripts/test-config.sh
 ./scripts/test-family.sh
+./scripts/test-variant.sh
 ./scripts/test-pipeline.sh
 ```
 
-All three commands should complete successfully before merging changes that
-affect configuration, family selection, or the export pipeline.
+All four commands should complete successfully before merging changes that
+affect configuration, family selection, variant validation, or the export
+pipeline.
 
 ## Manual pipeline
 
@@ -318,8 +384,11 @@ be introduced later as multilingual support grows.
 
 Only the `article-document` family is currently registered.
 
-Additional document families will be added incrementally as their backends are
-implemented and tested.
+Only the `simple-document` variant is currently registered, and it currently
+supports only `article-document`.
+
+Additional document families and variants will be added incrementally as their
+backends and behavior are implemented and tested.
 
 ## Future testing
 
@@ -329,9 +398,10 @@ As OrgTeX grows, the test infrastructure should expand to cover:
 - duplicate configuration keys;
 - missing required configuration;
 - additional document families;
+- additional document variants;
+- invalid family and variant combinations;
 - invalid family/backend mappings;
 - themes and covers;
-- document variants;
 - configuration precedence;
 - invalid configuration handling;
 - cross-references;
