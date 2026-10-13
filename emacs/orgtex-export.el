@@ -7,6 +7,7 @@
 
 (require 'orgtex-config)
 (require 'orgtex-family)
+(require 'orgtex-variant)
 
 ;; Use LuaLaTeX as the default OrgTeX compiler.
 (setq org-latex-compiler "lualatex")
@@ -29,6 +30,13 @@
       (setq-local org-latex-default-class
                   (orgtex-family-get-latex-class family)))))
 
+(defun orgtex-export--validate-variant ()
+  "Validate the OrgTeX document variant against the selected family."
+  (let ((family (orgtex-config-get "FAMILY"))
+        (variant (orgtex-config-get "VARIANT")))
+    (when (and family variant)
+      (orgtex-variant-validate-for-family variant family))))
+
 (defun orgtex-export--apply-language ()
   "Apply the OrgTeX document language to the current Org buffer."
   (let ((language (orgtex-config-get "LANGUAGE")))
@@ -45,6 +53,7 @@
     (with-current-buffer buffer
       (orgtex-config-read)
       (orgtex-export--apply-family)
+      (orgtex-export--validate-variant)
       (orgtex-export--apply-language)
       (org-latex-export-to-latex))))
 
