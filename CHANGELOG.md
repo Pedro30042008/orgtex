@@ -6,6 +6,11 @@ All notable changes to OrgTeX will be documented in this file.
 
 ### Added
 
+- Configuration keyword validation for unknown or misspelled `ORGTEX_`
+  directives.
+- Dedicated language registry with initial support for `es` and `en`.
+- Language validation tests, including direct registry validation and
+  validation through the OrgTeX export pipeline.
 - Simple document cover support through `#+ORGTEX_COVER: simple`, including
   cover validation, LaTeX package selection, title-page generation, and
   end-to-end pipeline verification.
@@ -29,7 +34,14 @@ All notable changes to OrgTeX will be documented in this file.
 
 ### Changed
 
-- The export pipeline now preserves package order so themes are loaded before
+- Configuration parsing is now separated from semantic value validation.
+  `orgtex-config.el` validates configuration keyword names and preserves raw
+  values, while specialized registries validate family, variant, theme, cover,
+  and language semantics.
+- Language resolution during export now uses the dedicated OrgTeX language
+  registry instead of hardcoded export logic.
+- The aggregate test runner now executes seven test suites.
+- The export pipeline preserves package order so themes are loaded before
   covers.
-- The pipeline warning check now detects persistent LaTeX warnings without
-  matching unrelated package metadata.
+- The pipeline warning check detects persistent LaTeX warnings without matching
+  unrelated package metadata.
