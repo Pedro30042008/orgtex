@@ -12,6 +12,7 @@ TESTS=(
     "test-variant.sh"
     "test-theme.sh"
     "test-cover.sh"
+    "test-language.sh"
     "test-pipeline.sh"
 )
 
