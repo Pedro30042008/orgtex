@@ -8,6 +8,7 @@
   '(("FAMILY"   . ("article-document"))
     ("VARIANT"  . ("simple-document"))
     ("THEME"    . ("minimal"))
+    ("COVER"    . ("none" "simple"))
     ("LANGUAGE" . ("es" "en")))
   "Supported OrgTeX document configuration values.")
 

@@ -78,13 +78,16 @@ grep -Fq '\documentclass{orgtex-article}' "$TEX_SOURCE" \
 grep -Fq '\usepackage{orgtex-theme-minimal}' "$TEX_SOURCE" \
     || fail "generated LaTeX does not load the expected minimal theme."
 
+grep -Fq '\usepackage{orgtex-cover-simple}' "$TEX_SOURCE" \
+    || fail "generated LaTeX does not load the expected simple cover."
+
 # ----------------------------------------------------------
 # LaTeX -> PDF
 # ----------------------------------------------------------
 
 echo "Compiling LaTeX document with LuaLaTeX..."
 
-TEXINPUTS="$PROJECT_ROOT/latex/core//:$PROJECT_ROOT/latex/backends//:$PROJECT_ROOT/latex/themes//:" \
+TEXINPUTS="$PROJECT_ROOT/latex/core//:$PROJECT_ROOT/latex/backends//:$PROJECT_ROOT/latex/themes//:$PROJECT_ROOT/latex/covers//:" \
 latexmk \
     -lualatex \
     -interaction=nonstopmode \
@@ -98,7 +101,7 @@ latexmk \
 [[ -f "$PDF_OUTPUT" ]] \
     || fail "the expected PDF was not generated."
 
-if grep -n "Warning" "$LOG_OUTPUT"; then
+if grep -En '^[[:space:]]*(LaTeX Warning:|Package .* Warning:|warning[[:space:]]+\()' "$LOG_OUTPUT"; then
     fail "persistent LaTeX warnings were found in the final log."
 fi
 

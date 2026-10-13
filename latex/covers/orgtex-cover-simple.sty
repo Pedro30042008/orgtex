@@ -1,0 +1,41 @@
+% SPDX-License-Identifier: MPL-2.0
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{orgtex-cover-simple}[2026/10/13 v0.1.0 OrgTeX simple cover]
+
+% ----------------------------------------------------------
+% Simple title-page cover
+% ----------------------------------------------------------
+
+\makeatletter
+
+\newcommand{\orgtexsimplecover}{%
+  \begin{titlepage}
+    \centering
+    \vspace*{\fill}
+
+    {\LARGE\bfseries \@title \par}
+
+    \vspace{1.5cm}
+
+    {\large \@author \par}
+
+    \vspace{1cm}
+
+    {\large \@date \par}
+
+    \vspace*{\fill}
+  \end{titlepage}
+}
+
+\makeatother
+
+% Disable PDF page anchors while producing the cover so that Hyperref
+% does not create a duplicate page.1 destination.
+\AtBeginDocument{%
+  \hypersetup{pageanchor=false}%
+  \orgtexsimplecover
+  \hypersetup{pageanchor=true}%
+}
+
+\endinput
