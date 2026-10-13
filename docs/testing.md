@@ -2,8 +2,8 @@
 
 OrgTeX currently includes automated tests for document configuration,
 document family selection, document variant validation, document theme
-selection, document cover selection, and the main document generation
-pipeline.
+selection, document cover selection, document language validation, and the
+main document generation pipeline.
 
 The goal of the test suite is to verify that the core OrgTeX workflow works
 from an Org Mode source file to a final PDF and that invalid configuration or
@@ -11,7 +11,7 @@ unsupported document combinations are rejected correctly.
 
 ## Available test scripts
 
-OrgTeX currently provides six individual test scripts and one aggregate test
+OrgTeX currently provides seven individual test scripts and one aggregate test
 runner:
 
 ```text
@@ -20,6 +20,7 @@ scripts/test-family.sh
 scripts/test-variant.sh
 scripts/test-theme.sh
 scripts/test-cover.sh
+scripts/test-language.sh
 scripts/test-pipeline.sh
 scripts/test-all.sh
 ```
@@ -29,13 +30,63 @@ The individual scripts test specific parts of the system.
 The aggregate runner executes all current test suites and prints a final
 summary.
 
+## Configuration parsing and semantic validation
+
+OrgTeX separates configuration parsing from semantic validation.
+
+The configuration parser is responsible for:
+
+- reading supported `ORGTEX_` keyword names;
+- preserving their raw values;
+- rejecting unknown or misspelled `ORGTEX_` keyword names.
+
+The specialized registries are responsible for validating the meaning of those
+values.
+
+The current responsibility split is:
+
+```text
+orgtex-config.el
+    ↓
+reads ORGTEX_ keywords
+    ↓
+validates keyword names
+    ↓
+returns raw values
+
+specialized registries
+    ↓
+validate semantic values
+```
+
+For example:
+
+```org
+#+ORGTEX_LANGUAGE: klingon
+```
+
+is syntactically valid configuration because `ORGTEX_LANGUAGE` is a known
+keyword.
+
+The configuration parser therefore preserves:
+
+```text
+LANGUAGE -> klingon
+```
+
+The language registry then rejects `klingon` because it is not a supported
+OrgTeX language.
+
+This separation prevents the configuration parser from duplicating information
+already stored in family, variant, theme, cover, and language registries.
+
 ## Document configuration test
 
 The configuration test verifies that:
 
-- valid `ORGTEX_` document keywords can be read;
-- supported values are accepted;
-- invalid values are rejected;
+- supported `ORGTEX_` keyword names can be read;
+- raw values are preserved without semantic validation;
+- unknown or misspelled `ORGTEX_` keyword names are rejected;
 - configuration errors return a non-zero process status;
 - configuration errors contain useful diagnostic information.
 
@@ -45,20 +96,34 @@ The current valid configuration is read from:
 tests/fixtures/org/minimal-article.org
 ```
 
-The intentionally invalid configuration is stored in:
+The test also uses:
 
 ```text
 tests/fixtures/org/invalid-language.org
 ```
 
-The invalid fixture currently uses:
+to verify that the parser preserves an unsupported semantic value such as:
 
 ```org
 #+ORGTEX_LANGUAGE: klingon
 ```
 
-This value is intentionally unsupported and should cause OrgTeX validation to
-fail.
+without rejecting it at the parsing layer.
+
+The intentionally invalid keyword fixture is:
+
+```text
+tests/fixtures/org/invalid-keyword.org
+```
+
+It contains a misspelled keyword:
+
+```org
+#+ORGTEX_LENGUAGE: es
+```
+
+Because `ORGTEX_LENGUAGE` is not a supported configuration keyword, the parser
+must reject the document.
 
 ### Running the configuration test
 
@@ -74,8 +139,9 @@ A successful run ends with:
 OrgTeX configuration tests OK
 ```
 
-A successful test means that valid configuration was accepted and invalid
-configuration was correctly rejected.
+A successful configuration test means that valid configuration was read,
+unsupported semantic values were preserved as raw text, and unknown keyword
+names were rejected.
 
 ## Document family test
 
@@ -289,6 +355,58 @@ nil
 
 and that unsupported family and cover combinations were rejected.
 
+## Document language test
+
+The language test verifies that public OrgTeX language names are mapped to their
+Org Mode language values.
+
+The current mappings are:
+
+```text
+es -> es
+en -> en
+```
+
+The language registry is responsible for semantic language validation.
+
+The configuration parser does not decide whether a language value is valid.
+
+For example:
+
+```org
+#+ORGTEX_LANGUAGE: klingon
+```
+
+is read successfully by the configuration parser, but the language registry
+rejects it.
+
+The language test verifies both direct registry validation and validation
+through the OrgTeX export pipeline.
+
+### Running the language test
+
+Run:
+
+```bash
+./scripts/test-language.sh
+```
+
+A successful run ends with:
+
+```text
+OrgTeX language tests OK
+```
+
+A successful language test means that:
+
+```text
+es -> es
+en -> en
+```
+
+were resolved correctly, that `klingon` was rejected by the language registry,
+and that a document using `klingon` was also rejected during export.
+
 ## End-to-end pipeline test
 
 The pipeline test verifies that:
@@ -299,6 +417,7 @@ The pipeline test verifies that:
 - `ORGTEX_VARIANT` is validated against the selected family;
 - `ORGTEX_THEME` selects and loads the correct LaTeX theme package;
 - `ORGTEX_COVER` selects and loads the correct LaTeX cover package;
+- `ORGTEX_LANGUAGE` is resolved through the language registry;
 - the generated LaTeX document uses the expected OrgTeX class;
 - the generated LaTeX document loads the expected OrgTeX theme;
 - the generated LaTeX document loads the expected OrgTeX cover;
@@ -315,7 +434,7 @@ Org document
     ↓
 Org Mode
     ↓
-OrgTeX configuration
+OrgTeX configuration parser
     ↓
 OrgTeX family registry
     ↓
@@ -324,6 +443,8 @@ OrgTeX variant validation
 OrgTeX theme registry
     ↓
 OrgTeX cover registry
+    ↓
+OrgTeX language registry
     ↓
 OrgTeX export integration
     ↓
@@ -443,6 +564,7 @@ test-family.sh
 test-variant.sh
 test-theme.sh
 test-cover.sh
+test-language.sh
 test-pipeline.sh
 ```
 
@@ -454,9 +576,9 @@ A successful run ends with:
 ========================================
 OrgTeX test summary
 ========================================
-Passed: 6
+Passed: 7
 Failed: 0
-Total:  6
+Total:  7
 
 OrgTeX test suite OK
 ```
@@ -467,7 +589,7 @@ part of the system.
 For example:
 
 ```bash
-./scripts/test-cover.sh
+./scripts/test-language.sh
 ```
 
 or:
@@ -477,8 +599,8 @@ or:
 ```
 
 All tests should pass before merging changes that affect configuration, family
-selection, variant validation, theme selection, cover selection, or the export
-pipeline.
+selection, variant validation, theme selection, cover selection, language
+selection, or the export pipeline.
 
 ## Manual pipeline
 
@@ -569,19 +691,18 @@ warnings.
 
 ## Current limitations
 
-The configuration tests currently validate supported values, but they do not
-yet detect unknown or misspelled `ORGTEX_` keyword names.
+Configuration keyword names are now validated, including detection of unknown
+or misspelled `ORGTEX_` keywords.
 
-For example:
+Semantic values are intentionally validated by specialized registries instead
+of the configuration parser.
 
-```org
-#+ORGTEX_LENGUAGE: es
+Language handling currently supports only:
+
+```text
+es
+en
 ```
-
-is not yet rejected automatically.
-
-Language handling is also currently minimal. A dedicated language registry may
-be introduced later as multilingual support grows.
 
 Only the `article-document` family is currently registered.
 
@@ -597,25 +718,27 @@ support only `article-document`.
 The `simple` cover currently uses the document title, author, and date as its
 content.
 
-Additional document families, variants, themes, and covers will be added
-incrementally as their implementations and behavior are developed and tested.
+Additional document families, variants, themes, covers, and languages will be
+added incrementally as their implementations and behavior are developed and
+tested.
 
 ## Future testing
 
 As OrgTeX grows, the test infrastructure should expand to cover:
 
-- unknown configuration keyword names;
 - duplicate configuration keys;
 - missing required configuration;
 - additional document families;
 - additional document variants;
 - additional document themes;
 - additional document covers;
+- additional document languages;
 - invalid family and variant combinations;
 - invalid family and theme combinations;
 - invalid family and cover combinations;
 - invalid family/backend mappings;
 - configuration precedence;
+- language-specific LaTeX behavior;
 - cover metadata and assets;
 - cross-references;
 - tables and figures;
