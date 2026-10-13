@@ -6,6 +6,7 @@
 (require 'ox-latex)
 
 (require 'orgtex-config)
+(require 'orgtex-family)
 
 ;; Use LuaLaTeX as the default OrgTeX compiler.
 (setq org-latex-compiler "lualatex")
@@ -20,6 +21,13 @@
    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
    ("\\paragraph{%s}" . "\\paragraph*{%s}")
    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+
+(defun orgtex-export--apply-family ()
+  "Apply the OrgTeX document family to the current Org buffer."
+  (let ((family (orgtex-config-get "FAMILY")))
+    (when family
+      (setq-local org-latex-default-class
+                  (orgtex-family-get-latex-class family)))))
 
 (defun orgtex-export--apply-language ()
   "Apply the OrgTeX document language to the current Org buffer."
@@ -36,6 +44,7 @@
   (let ((buffer (find-file-noselect file)))
     (with-current-buffer buffer
       (orgtex-config-read)
+      (orgtex-export--apply-family)
       (orgtex-export--apply-language)
       (org-latex-export-to-latex))))
 
