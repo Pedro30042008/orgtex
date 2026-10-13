@@ -6,6 +6,7 @@ All notable changes to OrgTeX will be documented in this file.
 
 ### Added
 
+- Minimal document theme support through `#+ORGTEX_THEME: minimal`, including theme validation, LaTeX package selection, and end-to-end pipeline verification.
 - ADR 0003 defining Org keywords as the primary per-document configuration format.
 - Automated end-to-end test runner for the initial OrgTeX pipeline.
 - Minimal end-to-end Org Mode to PDF pipeline test.
