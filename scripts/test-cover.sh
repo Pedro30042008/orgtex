@@ -7,6 +7,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+SIMPLE_COVER_PACKAGE="$PROJECT_ROOT/latex/covers/orgtex-cover-simple.sty"
+
 fail() {
     echo "OrgTeX cover test failed: $1" >&2
     exit 1
@@ -20,6 +22,7 @@ require_command() {
 echo "Checking cover test dependencies..."
 
 require_command emacs
+require_command grep
 
 echo "Testing valid OrgTeX cover..."
 
@@ -90,6 +93,19 @@ set -e
 
 [[ "$INVALID_OUTPUT" == *"book"* ]] \
     || fail "invalid cover error did not include the family name."
+
+echo "Testing simple cover title behavior..."
+
+[[ -f "$SIMPLE_COVER_PACKAGE" ]] \
+    || fail "simple cover LaTeX package was not found."
+
+grep -Fq '\renewcommand{\maketitle}{\orgtexsimplecover}' \
+    "$SIMPLE_COVER_PACKAGE" \
+    || fail "simple cover does not replace the standard LaTeX title."
+
+if grep -Fq '\AtBeginDocument' "$SIMPLE_COVER_PACKAGE"; then
+    fail "simple cover must not create an additional title page with AtBeginDocument."
+fi
 
 echo
 echo "OrgTeX cover tests OK"

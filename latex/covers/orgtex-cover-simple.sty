@@ -9,7 +9,21 @@
 
 \makeatletter
 
+\newcommand{\orgtexcoverdisablepageanchors}{%
+  \@ifpackageloaded{hyperref}{%
+    \hypersetup{pageanchor=false}%
+  }{}%
+}
+
+\newcommand{\orgtexcoverenablepageanchors}{%
+  \@ifpackageloaded{hyperref}{%
+    \hypersetup{pageanchor=true}%
+  }{}%
+}
+
 \newcommand{\orgtexsimplecover}{%
+  \orgtexcoverdisablepageanchors
+
   \begin{titlepage}
     \centering
     \vspace*{\fill}
@@ -26,16 +40,15 @@
 
     \vspace*{\fill}
   \end{titlepage}
+
+  \orgtexcoverenablepageanchors
 }
+
+% Org Mode already generates \maketitle.
+% Replace its standard behavior with the selected OrgTeX cover instead of
+% creating an additional title page independently.
+\renewcommand{\maketitle}{\orgtexsimplecover}
 
 \makeatother
-
-% Disable PDF page anchors while producing the cover so that Hyperref
-% does not create a duplicate page.1 destination.
-\AtBeginDocument{%
-  \hypersetup{pageanchor=false}%
-  \orgtexsimplecover
-  \hypersetup{pageanchor=true}%
-}
 
 \endinput
