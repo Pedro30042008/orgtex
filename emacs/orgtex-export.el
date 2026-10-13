@@ -10,6 +10,7 @@
 (require 'orgtex-variant)
 (require 'orgtex-theme)
 (require 'orgtex-cover)
+(require 'orgtex-language)
 
 ;; Use LuaLaTeX as the default OrgTeX compiler.
 (setq org-latex-compiler "lualatex")
@@ -77,14 +78,12 @@
        (orgtex-cover-get-package cover)))))
 
 (defun orgtex-export--apply-language ()
-  "Apply the OrgTeX document language to the current Org buffer."
+  "Validate and apply the OrgTeX document language."
   (let ((language (orgtex-config-get "LANGUAGE")))
     (when language
-      (setq-local org-export-default-language
-                  (pcase language
-                    ("es" "es")
-                    ("en" "en")
-                    (_ language))))))
+      (setq-local
+       org-export-default-language
+       (orgtex-language-get-org-language language)))))
 
 (defun orgtex-export-file (file)
   "Export Org FILE to LaTeX using OrgTeX configuration."

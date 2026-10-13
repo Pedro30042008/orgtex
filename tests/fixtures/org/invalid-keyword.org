@@ -1,0 +1,10 @@
+#+TITLE: Invalid OrgTeX Keyword Test
+#+AUTHOR: OrgTeX Project
+
+#+ORGTEX_FAMILY: article-document
+#+ORGTEX_LENGUAGE: es
+
+* Test
+
+This document intentionally contains a misspelled OrgTeX configuration
+keyword.

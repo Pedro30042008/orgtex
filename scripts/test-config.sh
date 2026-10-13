@@ -8,7 +8,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 VALID_ORG="$PROJECT_ROOT/tests/fixtures/org/minimal-article.org"
-INVALID_ORG="$PROJECT_ROOT/tests/fixtures/org/invalid-language.org"
+INVALID_KEYWORD_ORG="$PROJECT_ROOT/tests/fixtures/org/invalid-keyword.org"
+INVALID_VALUE_ORG="$PROJECT_ROOT/tests/fixtures/org/invalid-language.org"
 
 fail() {
     echo "OrgTeX config test failed: $1" >&2
@@ -46,10 +47,29 @@ echo "$VALID_OUTPUT"
 [[ "$VALID_OUTPUT" == *'("THEME" . "minimal")'* ]] \
     || fail "valid THEME configuration was not read correctly."
 
+[[ "$VALID_OUTPUT" == *'("COVER" . "simple")'* ]] \
+    || fail "valid COVER configuration was not read correctly."
+
 [[ "$VALID_OUTPUT" == *'("LANGUAGE" . "es")'* ]] \
     || fail "valid LANGUAGE configuration was not read correctly."
 
-echo "Testing invalid OrgTeX configuration..."
+echo "Testing raw configuration value reading..."
+
+RAW_VALUE_OUTPUT="$(
+    emacs -Q --batch \
+        -L "$PROJECT_ROOT/emacs" \
+        -l "$PROJECT_ROOT/emacs/orgtex-config.el" \
+        --eval "(with-current-buffer
+                    (find-file-noselect \"$INVALID_VALUE_ORG\")
+                  (prin1 (orgtex-config-read)))"
+)"
+
+echo "$RAW_VALUE_OUTPUT"
+
+[[ "$RAW_VALUE_OUTPUT" == *'("LANGUAGE" . "klingon")'* ]] \
+    || fail "configuration parser did not preserve the raw LANGUAGE value."
+
+echo "Testing unknown OrgTeX keyword detection..."
 
 set +e
 
@@ -58,7 +78,7 @@ INVALID_OUTPUT="$(
         -L "$PROJECT_ROOT/emacs" \
         -l "$PROJECT_ROOT/emacs/orgtex-config.el" \
         --eval "(with-current-buffer
-                    (find-file-noselect \"$INVALID_ORG\")
+                    (find-file-noselect \"$INVALID_KEYWORD_ORG\")
                   (orgtex-config-read))" \
         2>&1
 )"
@@ -68,13 +88,13 @@ INVALID_STATUS=$?
 set -e
 
 [[ "$INVALID_STATUS" -ne 0 ]] \
-    || fail "invalid configuration was accepted unexpectedly."
+    || fail "unknown OrgTeX keyword was accepted unexpectedly."
 
-[[ "$INVALID_OUTPUT" == *"invalid value"* ]] \
-    || fail "invalid configuration did not report the expected error."
+[[ "$INVALID_OUTPUT" == *"unknown configuration keyword"* ]] \
+    || fail "unknown keyword did not report the expected error."
 
-[[ "$INVALID_OUTPUT" == *"klingon"* ]] \
-    || fail "invalid configuration error did not include the invalid value."
+[[ "$INVALID_OUTPUT" == *"ORGTEX_LENGUAGE"* ]] \
+    || fail "unknown keyword error did not include the misspelled keyword."
 
 echo
 echo "OrgTeX configuration tests OK"
