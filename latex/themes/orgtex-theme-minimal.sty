@@ -1,0 +1,45 @@
+% SPDX-License-Identifier: MPL-2.0
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{orgtex-theme-minimal}[2026/10/13 v0.1.0 OrgTeX minimal theme]
+
+% ----------------------------------------------------------
+% Typography
+% ----------------------------------------------------------
+
+\RequirePackage{microtype}
+
+% ----------------------------------------------------------
+% Page layout
+% ----------------------------------------------------------
+
+\RequirePackage{geometry}
+
+\geometry{
+  margin=2.7cm
+}
+
+% ----------------------------------------------------------
+% Paragraphs
+% ----------------------------------------------------------
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.65em}
+
+% ----------------------------------------------------------
+% Section spacing
+% ----------------------------------------------------------
+
+\RequirePackage{titlesec}
+
+\titlespacing*{\section}
+  {0pt}
+  {2.2em}
+  {0.8em}
+
+\titlespacing*{\subsection}
+  {0pt}
+  {1.8em}
+  {0.6em}
+
+\endinput
